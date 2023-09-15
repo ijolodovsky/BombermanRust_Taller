@@ -67,25 +67,16 @@ impl Tablero {
     
         match self.cuadricula[y_usize][x_usize] {
             Objeto::Bomba(traspaso, alcance) =>{
-
-                print!("Encontre una bomba en {} y {} con alcance {}", x_usize, y_usize, alcance);
-
                 self.cuadricula[y_usize][x_usize] = Objeto::Vacio;
                 self.detonar_hacia_arriba(x_usize, y_usize, alcance, traspaso);
                 self.detonar_hacia_abajo(x_usize, y_usize, alcance, traspaso);
                 self.detonar_hacia_izquierda(x_usize, y_usize, alcance, traspaso);
-                self.detonar_hacia_derecha(x_usize, y_usize, alcance, traspaso);
-
-                
-
-                
+                self.detonar_hacia_derecha(x_usize, y_usize, alcance, traspaso);   
             }
             _ => {
                 // No es una bomba, no se puede detonar.
-                return;
             }
         }
-        guardar_tablero("./", &self);
     }
 
     fn detonar_hacia_arriba(&mut self, x_usize: usize, y_usize: usize, alcance: i32, traspaso: bool) {
@@ -214,7 +205,6 @@ impl Tablero {
                     }
                 }
                 Some(_) => {
-                    print!("detonando cuadricula {}, {}", x_usize+i_usize, y_usize);
                     seguir_detonando=self.detonar_en_posicion(x_usize + i_usize, y_usize, traspaso, x_usize, y_usize);
                     if !seguir_detonando{
                         return;
@@ -227,37 +217,30 @@ impl Tablero {
     
     
     fn detonar_en_posicion(&mut self, x: usize, y: usize, traspaso: bool, x_original: usize, y_original: usize) -> bool {
-        match &mut self.cuadricula[y][x] {
-            &mut Objeto::Enemigo(ref mut vida, ref mut bombas_afectadas) => {
-                if bomba_no_afecto_al_enemigo(x_original, y_original, &mut *bombas_afectadas){
+        match self.cuadricula[y][x] {
+            Objeto::Enemigo(ref mut vida, ref mut bombas_afectadas) => {
+                if bomba_no_afecto_al_enemigo(x_original, y_original, bombas_afectadas){
                     bombas_afectadas.insert((x_original, y_original));
                     if *vida > 1 {
                         *vida -= 1;
                     } else{
                         self.cuadricula[y][x] = Objeto::Vacio;
-                        print!("Mate un enemigo");
                     }
                 }
-                return true;
+                true
             }
-            &mut Objeto::Bomba(_, _) => {
-                print!("Encontre una bomba en {} y {}", x, y);
+            Objeto::Bomba(_, _) => {
                 self.detonar(x as i32, y as i32);
-                return true;
+                true
             }
-            &mut Objeto::Roca =>{
-                if !traspaso{
-                    return false;
-                } else {
-                    return true;
-                }
+            Objeto::Roca =>{
+                !traspaso
             }
-            &mut Objeto::Pared => {
-                return false;
+            Objeto::Pared => {
+                false
             }
             _ => {
-                return true;
-                // Otros casos, como Pared o Vacío, no requieren acciones adicionales.
+                true
             }
         }
     }
@@ -357,10 +340,8 @@ fn guardar_tablero(output_dir: &str, tablero: &Tablero) -> Result<(), io::Error>
             "Directorio de salida no existe",
         ));
     }
-
     let output_file_name = "output.txt";
     let output_file_path = output_path.join(output_file_name);
-
     let mut file = File::create(&output_file_path)?;
 
     for row in &tablero.cuadricula {
@@ -383,11 +364,6 @@ fn guardar_tablero(output_dir: &str, tablero: &Tablero) -> Result<(), io::Error>
         }
         writeln!(file)?;
     }
-
-    let mut line = String::new();
-    println!("Enter code :");
-    std::io::stdin().read_line(&mut line).unwrap();
-
     Ok(())
 }
 
