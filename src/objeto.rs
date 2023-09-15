@@ -1,5 +1,5 @@
-use std::collections::HashSet;
 use crate::direccion::Direccion;
+use std::collections::HashSet;
 
 #[derive(Clone)]
 pub enum Objeto {

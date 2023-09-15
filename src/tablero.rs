@@ -1,5 +1,5 @@
-use crate::objeto::Objeto;
 use crate::direccion::Direccion;
+use crate::objeto::Objeto;
 use crate::utils::bomba_no_afecto_al_enemigo;
 
 pub struct Tablero {
@@ -30,10 +30,16 @@ impl Tablero {
         match self.cuadricula[y_usize][x_usize] {
             Objeto::Bomba(traspaso, alcance) => {
                 self.cuadricula[y_usize][x_usize] = Objeto::Vacio;
-                self.detonar_hacia_arriba(x_usize, y_usize, alcance, traspaso);
-                self.detonar_hacia_abajo(x_usize, y_usize, alcance, traspaso);
-                self.detonar_hacia_izquierda(x_usize, y_usize, alcance, traspaso);
-                self.detonar_hacia_derecha(x_usize, y_usize, alcance, traspaso);
+                self.detonar_en_direccion(x_usize, y_usize, Direccion::Arriba, alcance, traspaso);
+                self.detonar_en_direccion(x_usize, y_usize, Direccion::Abajo, alcance, traspaso);
+                self.detonar_en_direccion(
+                    x_usize,
+                    y_usize,
+                    Direccion::Izquierda,
+                    alcance,
+                    traspaso,
+                );
+                self.detonar_en_direccion(x_usize, y_usize, Direccion::Derecha, alcance, traspaso);
             }
             _ => {
                 // No es una bomba, no se puede detonar.
@@ -41,246 +47,56 @@ impl Tablero {
         }
     }
 
-    pub fn detonar_hacia_arriba(
+    pub fn detonar_en_direccion(
         &mut self,
         x_usize: usize,
         y_usize: usize,
+        direccion: Direccion,
         alcance: i32,
         traspaso: bool,
     ) {
-        let mut seguir_detonando;
+        let mut i = 1;
+        let mut seguir_detonando = true;
 
-        for i in 1..=alcance {
-            let i_usize = i as usize;
-            if y_usize >= i_usize {
-                match self.obtener_objeto_en_posicion(x_usize, y_usize - i_usize) {
-                    Some(Objeto::Desvio(dir)) => match dir {
-                        Direccion::Abajo => {
-                            self.detonar_hacia_abajo(
-                                x_usize,
-                                y_usize - i_usize,
-                                alcance - i,
-                                traspaso,
-                            );
-                        }
-                        Direccion::Arriba => {
-                            self.detonar_hacia_arriba(
-                                x_usize,
-                                y_usize - i_usize,
-                                alcance - i,
-                                traspaso,
-                            );
-                        }
-                        Direccion::Izquierda => {
-                            self.detonar_hacia_izquierda(
-                                x_usize,
-                                y_usize - i_usize,
-                                alcance - i,
-                                traspaso,
-                            );
-                        }
-                        Direccion::Derecha => {
-                            self.detonar_hacia_derecha(
-                                x_usize,
-                                y_usize - i_usize,
-                                alcance - i,
-                                traspaso,
-                            );
-                        }
-                    },
+        while i <= alcance && seguir_detonando {
+            let (nuevo_x, nuevo_y) =
+                Self::calcular_nueva_posicion(x_usize, y_usize, direccion.clone(), i);
+            if nuevo_x < self.tamaño as usize && nuevo_y < self.tamaño as usize {
+                match self.obtener_objeto_en_posicion(nuevo_x, nuevo_y) {
+                    Some(Objeto::Desvio(dir)) => {
+                        self.detonar_en_direccion(
+                            nuevo_x,
+                            nuevo_y,
+                            dir.clone(),
+                            alcance - i,
+                            traspaso,
+                        );
+                    }
                     Some(_) => {
-                        seguir_detonando = self.detonar_en_posicion(
-                            x_usize,
-                            y_usize - i_usize,
-                            traspaso,
-                            x_usize,
-                            y_usize,
-                        );
-                        if !seguir_detonando {
-                            return;
-                        }
+                        seguir_detonando =
+                            self.detonar_en_posicion(nuevo_x, nuevo_y, traspaso, x_usize, y_usize);
                     }
-                    None => return,
+                    None => seguir_detonando = false,
                 }
+            } else {
+                seguir_detonando = false;
             }
+
+            i += 1;
         }
     }
 
-    pub fn detonar_hacia_abajo(
-        &mut self,
+    pub fn calcular_nueva_posicion(
         x_usize: usize,
         y_usize: usize,
-        alcance: i32,
-        traspaso: bool,
-    ) {
-        let mut seguir_detonando;
-        for i in 1..=alcance {
-            let i_usize = i as usize;
-            match self.obtener_objeto_en_posicion(x_usize, y_usize + i_usize) {
-                Some(Objeto::Desvio(dir)) => match dir {
-                    Direccion::Abajo => {
-                        self.detonar_hacia_abajo(x_usize, y_usize + i_usize, alcance - i, traspaso);
-                    }
-                    Direccion::Arriba => {
-                        self.detonar_hacia_arriba(
-                            x_usize,
-                            y_usize + i_usize,
-                            alcance - i,
-                            traspaso,
-                        );
-                    }
-                    Direccion::Izquierda => {
-                        self.detonar_hacia_izquierda(
-                            x_usize,
-                            y_usize + i_usize,
-                            alcance - i,
-                            traspaso,
-                        );
-                    }
-                    Direccion::Derecha => {
-                        self.detonar_hacia_derecha(
-                            x_usize,
-                            y_usize + i_usize,
-                            alcance - i,
-                            traspaso,
-                        );
-                    }
-                },
-                Some(_) => {
-                    seguir_detonando = self.detonar_en_posicion(
-                        x_usize,
-                        y_usize + i_usize,
-                        traspaso,
-                        x_usize,
-                        y_usize,
-                    );
-                    if !seguir_detonando {
-                        return;
-                    }
-                }
-                None => return,
-            }
-        }
-    }
-
-    pub fn detonar_hacia_izquierda(
-        &mut self,
-        x_usize: usize,
-        y_usize: usize,
-        alcance: i32,
-        traspaso: bool,
-    ) {
-        let mut seguir_detonando;
-        for i in 1..=alcance {
-            let i_usize = i as usize;
-            if x_usize >= i_usize {
-                match self.obtener_objeto_en_posicion(x_usize - i_usize, y_usize) {
-                    Some(Objeto::Desvio(dir)) => match dir {
-                        Direccion::Abajo => {
-                            self.detonar_hacia_abajo(
-                                x_usize - i_usize,
-                                y_usize,
-                                alcance - i,
-                                traspaso,
-                            );
-                        }
-                        Direccion::Arriba => {
-                            self.detonar_hacia_arriba(
-                                x_usize - i_usize,
-                                y_usize,
-                                alcance - i,
-                                traspaso,
-                            );
-                        }
-                        Direccion::Izquierda => {
-                            self.detonar_hacia_izquierda(
-                                x_usize - i_usize,
-                                y_usize,
-                                alcance - i,
-                                traspaso,
-                            );
-                        }
-                        Direccion::Derecha => {
-                            self.detonar_hacia_derecha(
-                                x_usize - i_usize,
-                                y_usize,
-                                alcance - i,
-                                traspaso,
-                            );
-                        }
-                    },
-                    Some(_) => {
-                        seguir_detonando = self.detonar_en_posicion(
-                            x_usize - i_usize,
-                            y_usize,
-                            traspaso,
-                            x_usize,
-                            y_usize,
-                        );
-                        if !seguir_detonando {
-                            return;
-                        }
-                    }
-                    None => return,
-                }
-            }
-        }
-    }
-
-    pub fn detonar_hacia_derecha(
-        &mut self,
-        x_usize: usize,
-        y_usize: usize,
-        alcance: i32,
-        traspaso: bool,
-    ) {
-        let mut seguir_detonando;
-        for i in 1..=alcance {
-            let i_usize = i as usize;
-            match self.obtener_objeto_en_posicion(x_usize + i_usize, y_usize) {
-                Some(Objeto::Desvio(dir)) => match dir {
-                    Direccion::Abajo => {
-                        self.detonar_hacia_abajo(x_usize + i_usize, y_usize, alcance - i, traspaso);
-                    }
-                    Direccion::Arriba => {
-                        self.detonar_hacia_arriba(
-                            x_usize + i_usize,
-                            y_usize,
-                            alcance - i,
-                            traspaso,
-                        );
-                    }
-                    Direccion::Izquierda => {
-                        self.detonar_hacia_izquierda(
-                            x_usize + i_usize,
-                            y_usize,
-                            alcance - i,
-                            traspaso,
-                        );
-                    }
-                    Direccion::Derecha => {
-                        self.detonar_hacia_derecha(
-                            x_usize + i_usize,
-                            y_usize,
-                            alcance - i,
-                            traspaso,
-                        );
-                    }
-                },
-                Some(_) => {
-                    seguir_detonando = self.detonar_en_posicion(
-                        x_usize + i_usize,
-                        y_usize,
-                        traspaso,
-                        x_usize,
-                        y_usize,
-                    );
-                    if !seguir_detonando {
-                        return;
-                    }
-                }
-                None => return,
-            }
+        direccion: Direccion,
+        paso: i32,
+    ) -> (usize, usize) {
+        match direccion {
+            Direccion::Arriba => (x_usize, y_usize.wrapping_sub(paso as usize)),
+            Direccion::Abajo => (x_usize, y_usize + paso as usize),
+            Direccion::Derecha => (x_usize + paso as usize, y_usize),
+            Direccion::Izquierda => (x_usize.wrapping_sub(paso as usize), y_usize),
         }
     }
 
