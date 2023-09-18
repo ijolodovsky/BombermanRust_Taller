@@ -14,7 +14,7 @@ impl Tablero {
         }
     }
 
-    pub fn obtener_objeto_en_posicion(&self, x: usize, y: usize) -> Option<&Objeto> {
+    fn obtener_objeto_en_posicion(&self, x: usize, y: usize) -> Option<&Objeto> {
         if y < self.tamaño as usize && x < self.tamaño as usize {
             Some(&self.cuadricula[y][x])
         } else {
@@ -89,7 +89,7 @@ impl Tablero {
         }
     }
 
-    pub fn calcular_nueva_posicion(
+    fn calcular_nueva_posicion(
         x_usize: usize,
         y_usize: usize,
         direccion: Direccion,
@@ -103,7 +103,7 @@ impl Tablero {
         }
     }
 
-    pub fn detonar_en_posicion(
+    fn detonar_en_posicion(
         &mut self,
         x: usize,
         y: usize,
@@ -238,4 +238,109 @@ mod tests {
         assert_eq!(tablero.cuadricula[2][2], Objeto::Vacio);
         assert_eq!(tablero.cuadricula[1][2], Objeto::Pared);
     }
+
+
+    #[test]
+    fn test_detonar_bomba_con_diferente_alcance() {
+        let mut tablero = Tablero::new(3);
+        tablero.cuadricula = vec![
+            vec![Objeto::Bomba(false, 2), Objeto::Vacio, Objeto::Vacio],
+            vec![Objeto::Bomba(true, 1), Objeto::Bomba(false, 3), Objeto::Vacio],
+            vec![
+                Objeto::Bomba(true, 0),
+                Objeto::Vacio,
+                Objeto::Bomba(false, 4),
+            ],
+        ];
+
+        tablero.detonar(0, 0);
+        assert_eq!(tablero.cuadricula[0][0], Objeto::Vacio);
+        assert_eq!(tablero.cuadricula[1][0], Objeto::Vacio);
+        assert_eq!(tablero.cuadricula[2][0], Objeto::Vacio);
+
+        tablero.detonar(1, 1);
+        assert_eq!(tablero.cuadricula[1][1], Objeto::Vacio);
+        assert_eq!(tablero.cuadricula[0][1], Objeto::Vacio);
+        assert_eq!(tablero.cuadricula[2][1], Objeto::Vacio);
+        assert_eq!(tablero.cuadricula[1][2], Objeto::Vacio);
+
+        tablero.detonar(2, 2);
+        assert_eq!(tablero.cuadricula[2][2], Objeto::Vacio);
+        assert_eq!(tablero.cuadricula[1][2], Objeto::Vacio);
+        assert_eq!(tablero.cuadricula[0][2], Objeto::Vacio);
+    }
+
+    #[test]
+    fn test_detonar_in_direction() {
+        let mut tablero = Tablero::new(3);
+        tablero.cuadricula = vec![
+            vec![Objeto::Bomba(false, 2), Objeto::Vacio, Objeto::Vacio],
+            vec![
+                Objeto::Bomba(true, 2),
+                Objeto::Enemigo(3, HashSet::new()),
+                Objeto::Roca,
+            ],
+            vec![
+                Objeto::Desvio(Direccion::Derecha),
+                Objeto::Enemigo(2, HashSet::new()),
+                Objeto::Bomba(false, 2),
+            ],
+        ];
+
+        tablero.detonar_en_direccion((0, 1, 0, 1, true), Direccion::Derecha, 2);
+        let mut set_uno = HashSet::new();
+        set_uno.insert((0,1));
+        assert_eq!(tablero.cuadricula[1][1], Objeto::Enemigo(2,set_uno));
+        assert_eq!(tablero.cuadricula[1][2], Objeto::Roca);
+
+        tablero.detonar_en_direccion((0, 1, 0, 1, true), Direccion::Abajo, 2);
+        let mut set_dos = HashSet::new();
+        set_dos.insert((0,1));
+        assert_eq!(tablero.cuadricula[2][0], Objeto::Desvio(Direccion::Derecha));
+        assert_eq!(tablero.cuadricula[2][1], Objeto::Enemigo(1,set_dos));
+    }
+
+    #[test]
+    fn test_acceder_posiciones_fuera_del_limite() {
+        let tablero = Tablero::new(2);
+        assert_eq!(tablero.obtener_objeto_en_posicion(2, 1), None);
+        assert_eq!(tablero.obtener_objeto_en_posicion(1, 2), None);
+    }
+
+    #[test]
+    fn test_dos_explosiones_en_mismo_enemigo() {
+        let mut tablero = Tablero::new(3);
+        tablero.cuadricula = vec![
+            vec![Objeto::Bomba(false, 3), Objeto::Enemigo(2, HashSet::new()), Objeto::Vacio],
+            vec![Objeto::Desvio(Direccion::Derecha), Objeto::Desvio(Direccion::Arriba), Objeto::Roca],
+            vec![Objeto::Pared, Objeto::Vacio, Objeto::Pared],
+        ];
+    
+        tablero.detonar(0, 0);
+        let mut set = HashSet::new();
+        set.insert((0,0));
+        assert_eq!(tablero.cuadricula[0][1], Objeto::Enemigo(1, set));
+
+    }
+
+    #[test]
+fn test_detonar_con_pared() {
+    let mut tablero = Tablero::new(5);
+    tablero.cuadricula = vec![
+        vec![Objeto::Vacio, Objeto::Vacio, Objeto::Vacio, Objeto::Vacio, Objeto::Vacio],
+        vec![Objeto::Bomba(false, 1), Objeto::Bomba(false, 2), Objeto::Pared, Objeto::Enemigo(1, HashSet::new())],
+        vec![Objeto::Vacio, Objeto::Vacio, Objeto::Vacio, Objeto::Vacio, Objeto::Vacio],
+        vec![Objeto::Vacio, Objeto::Vacio, Objeto::Vacio, Objeto::Vacio, Objeto::Vacio],
+        vec![Objeto::Vacio, Objeto::Vacio, Objeto::Vacio, Objeto::Vacio, Objeto::Vacio],
+    ];
+
+    tablero.detonar(1, 1);
+
+    assert_eq!(tablero.cuadricula[1][0], Objeto::Vacio);
+    assert_eq!(tablero.cuadricula[1][1], Objeto::Vacio); // Bomba explotó, pero detenida por la pared.
+    assert_eq!(tablero.cuadricula[1][2], Objeto::Pared); // La pared detuvo la explosión.
+    let set = HashSet::new();
+    assert_eq!(tablero.cuadricula[1][3], Objeto::Enemigo(1, set));
+}
+
 }

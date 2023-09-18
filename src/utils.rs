@@ -5,7 +5,7 @@ use std::io::Write;
 use std::io::{self, BufRead, BufReader};
 use std::path::Path;
 
-pub fn convertir_simbolos(simbolo: &str) -> Result<Objeto, &'static str> {
+fn convertir_simbolos(simbolo: &str) -> Result<Objeto, &'static str> {
     let first_char = simbolo.chars().next().ok_or("El símbolo está vacío")?;
 
     match first_char {
