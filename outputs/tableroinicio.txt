@@ -1,4 +1,1 @@
-_ _ _ _ 
-_ _ W F1 
-_ _ _ _ 
-_ _ _ _ 
+ERROR: Valor de vida de enemigo no válido

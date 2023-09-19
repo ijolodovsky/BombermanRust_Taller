@@ -5,29 +5,23 @@ COSAS A CORREGIR:
 - Se deben implementar tests unitarios y de integración de las funcionalidades
     que se consideren más importantes.
 */
-mod direccion;
-mod objeto;
+
 mod tablero;
-mod utils;
-use std::path::Path;
-
-use direccion::Direccion;
-use objeto::Objeto;
-use tablero::Tablero;
-
 use std::env;
 use std::fs::File;
 use std::io::Write;
-use utils::{crear_tablero, guardar_tablero};
+use std::path::Path;
+use tablero::{crear_tablero, guardar_tablero};
 
 fn main() {
-    if let Err(err_msg) = run() {
+    let args: Vec<String> = env::args().collect();
+
+    if let Err(err_msg) = run(args) {
         println!("{}", err_msg);
     }
 }
 
-fn run() -> Result<(), String> {
-    let args: Vec<String> = env::args().collect();
+fn run(args: Vec<String>) -> Result<(), String> {
     if args.len() != 5 {
         return Err(
             "Uso incorrecto. Ejemplo: cargo run -- maze.txt /path/to/output_dir/ x y".to_string(),
@@ -47,12 +41,16 @@ fn run() -> Result<(), String> {
         }
     };
 
-    tablero.detonar(x, y);
-
-    match guardar_tablero(output_dir, &tablero, input_file) {
-        Ok(_) => Ok(()),
-        Err(e) => {
-            guardar_error(output_dir, &format!("ERROR: {}", e), input_file);
+    match tablero.detonar(x, y) {
+        Ok(_) => match guardar_tablero(output_dir, &tablero, input_file) {
+            Ok(_) => Ok(()),
+            Err(e) => {
+                guardar_error(output_dir, &format!("ERROR: {}", e), input_file);
+                Ok(())
+            }
+        },
+        Err(err_msg) => {
+            guardar_error(output_dir, &format!("ERROR: {}", err_msg), input_file);
             Ok(())
         }
     }
