@@ -1,11 +1,3 @@
-/*
-COSAS A CORREGIR:
-- Las funciones y los tipos de datos (struct) deben estar documentados siguiendo
-    el estándar de cargo doc.
-- Se deben implementar tests unitarios y de integración de las funcionalidades
-    que se consideren más importantes.
-*/
-
 mod tablero;
 use std::env;
 use std::fs::File;
@@ -106,7 +98,10 @@ mod tests {
     #[test]
     fn test_guardar_error() {
         // Crear un directorio temporal para las pruebas
-        fs::create_dir(TEMP_DIR_NAME).expect("Error al crear el directorio temporal");
+        if let Err(err) = fs::create_dir(TEMP_DIR_NAME) {
+            assert!(false, "Error al crear el directorio temporal: {:?}", err);
+            return;
+        }
 
         let temp_dir_path = &TEMP_DIR_NAME;
         let error_message = "Este es un mensaje de error de prueba";
@@ -116,12 +111,15 @@ mod tests {
 
         // Leer el contenido del archivo y verificar si es igual al mensaje de error
         let output_file_path = Path::new(temp_dir_path).join(input_file);
-        let contents =
-            fs::read_to_string(output_file_path).expect("Error al leer el archivo de salida");
-
-        assert_eq!(contents, error_message);
+        if let Ok(contents) = fs::read_to_string(output_file_path) {
+            assert_eq!(contents, error_message);
+        } else {
+            assert!(false, "Error al leer el archivo de salida");
+        }
 
         // Eliminar el directorio temporal después de la prueba
-        remove_dir_all(temp_dir_path).expect("Error al eliminar el directorio temporal");
+        if let Err(err) = remove_dir_all(temp_dir_path) {
+            assert!(false, "Error al eliminar el directorio temporal: {:?}", err);
+        }
     }
 }

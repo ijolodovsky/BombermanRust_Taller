@@ -556,7 +556,9 @@ mod tests {
         // Crear un archivo de prueba 'test_maze.txt' con contenido válido.
         let content = "F2 R\nW DU";
         let file_path = "test_maze.txt";
-        let _ = create_test_file(file_path, content).expect("Failed to create test file");
+        if let Err(e) = create_test_file(file_path, content) {
+            assert!(false, "Failed to create test file: {:?}", e);
+        }
 
         // Prueba para crear un tablero a partir del archivo de prueba.
         let resultado = crear_tablero(file_path);
@@ -575,7 +577,9 @@ mod tests {
         );
 
         // Limpiar el archivo de prueba después de usarlo.
-        fs::remove_file(file_path).expect("Failed to remove test file");
+        if let Err(e) = fs::remove_file(file_path) {
+            assert!(false, "Failed to remove test file: {:?}", e);
+        }
     }
 
     #[test]
@@ -603,15 +607,19 @@ mod tests {
         );
 
         // Leer el contenido del archivo y verificar que coincida con el tablero original.
-        let file_content =
-            fs::read_to_string(output_file_path.clone()).expect("Failed to read output file");
-        assert_eq!(
-            file_content, "B1 F2 \nR W \n",
-            "El contenido del archivo no coincide"
-        );
+        if let Ok(file_content) = fs::read_to_string(output_file_path.clone()) {
+            assert_eq!(
+                file_content, "B1 F2 \nR W \n",
+                "El contenido del archivo no coincide"
+            );
+        } else {
+            assert!(false, "Failed to read output file");
+        }
 
         // Eliminar el archivo temporal después de usarlo.
-        fs::remove_file(output_file_path).expect("Failed to remove output file");
+        if let Err(e) = fs::remove_file(output_file_path) {
+            assert!(false, "Failed to remove output file: {:?}", e);
+        }
     }
 
     #[test]
