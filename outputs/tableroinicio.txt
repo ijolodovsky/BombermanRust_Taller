@@ -1,1 +1,7 @@
-ERROR: Valor de vida de enemigo no válido
+_ _ _ _ _ _ _ 
+_ W _ W _ W _ 
+_ R R R _ _ _ 
+_ W _ W _ W _ 
+_ _ _ _ DU _ _ 
+_ W _ W _ W _ 
+_ _ _ _ _ _ _ 

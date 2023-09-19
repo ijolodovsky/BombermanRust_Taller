@@ -47,9 +47,10 @@ fn convertir_enemigo(simbolo: &str) -> Result<Objeto, &'static str> {
             Err("Valor de vida de enemigo no válido")
         }
     } else {
-        Err("Valor de vida de enemigo no válido")
+        Err("No se pudo obtener un valor de vida válido")
     }
 }
+
 
 fn convertir_bomba(simbolo: &str) -> Result<Objeto, &'static str> {
     let alcance_str = &simbolo[1..];
@@ -60,9 +61,10 @@ fn convertir_bomba(simbolo: &str) -> Result<Objeto, &'static str> {
             Err("Valor de alcance de bomba no válido")
         }
     } else {
-        Err("Valor de alcance de bomba no válido")
+        Err("No se pudo parsear el valor de alcance de bomba")
     }
 }
+
 
 fn convertir_bomba_traspaso(simbolo: &str) -> Result<Objeto, &'static str> {
     let alcance_str = &simbolo[1..];
@@ -73,9 +75,10 @@ fn convertir_bomba_traspaso(simbolo: &str) -> Result<Objeto, &'static str> {
             Err("Valor de alcance de bomba de traspaso no válido")
         }
     } else {
-        Err("Valor de alcance de bomba de traspaso no válido")
+        Err("No se pudo parsear el valor de alcance de bomba de traspaso")
     }
 }
+
 
 fn convertir_desvio(simbolo: &str) -> Result<Objeto, &'static str> {
     let direccion = match &simbolo[1..] {
@@ -88,10 +91,6 @@ fn convertir_desvio(simbolo: &str) -> Result<Objeto, &'static str> {
     Ok(Objeto::Desvio(direccion))
 }
 
-#[cfg(test)]
-mod tests {
-
-    use super::*;
     #[cfg(test)]
     mod tests {
         use super::*;
@@ -150,4 +149,3 @@ mod tests {
             );
         }
     }
-}

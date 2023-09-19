@@ -1,6 +1,6 @@
 _ _ _ _ _ _ _
 _ W _ W _ W _
-S4 R R R F3 _ _
+S4 R R R F2 _ _
 _ W _ W _ W _
 B2 _ B5 _ DU _ _
 _ W _ W _ W _
