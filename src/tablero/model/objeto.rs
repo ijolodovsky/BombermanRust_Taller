@@ -51,7 +51,6 @@ fn convertir_enemigo(simbolo: &str) -> Result<Objeto, &'static str> {
     }
 }
 
-
 fn convertir_bomba(simbolo: &str) -> Result<Objeto, &'static str> {
     let alcance_str = &simbolo[1..];
     if let Ok(alcance) = alcance_str.parse::<i32>() {
@@ -64,7 +63,6 @@ fn convertir_bomba(simbolo: &str) -> Result<Objeto, &'static str> {
         Err("No se pudo parsear el valor de alcance de bomba")
     }
 }
-
 
 fn convertir_bomba_traspaso(simbolo: &str) -> Result<Objeto, &'static str> {
     let alcance_str = &simbolo[1..];
@@ -79,7 +77,6 @@ fn convertir_bomba_traspaso(simbolo: &str) -> Result<Objeto, &'static str> {
     }
 }
 
-
 fn convertir_desvio(simbolo: &str) -> Result<Objeto, &'static str> {
     let direccion = match &simbolo[1..] {
         "U" => Direccion::Arriba,
@@ -91,61 +88,61 @@ fn convertir_desvio(simbolo: &str) -> Result<Objeto, &'static str> {
     Ok(Objeto::Desvio(direccion))
 }
 
-    #[cfg(test)]
-    mod tests {
-        use super::*;
-        use std::collections::HashSet;
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::HashSet;
 
-        #[test]
-        fn test_convertir_simbolos() {
-            // Prueba para convertir un símbolo en un Objeto válido.
-            assert_eq!(
-                convertir_simbolos("F2"),
-                Ok(Objeto::Enemigo(2, HashSet::new()))
-            );
-            assert_eq!(convertir_simbolos("R"), Ok(Objeto::Roca));
-            assert_eq!(convertir_simbolos("W"), Ok(Objeto::Pared));
+    #[test]
+    fn test_convertir_simbolos() {
+        // Prueba para convertir un símbolo en un Objeto válido.
+        assert_eq!(
+            convertir_simbolos("F2"),
+            Ok(Objeto::Enemigo(2, HashSet::new()))
+        );
+        assert_eq!(convertir_simbolos("R"), Ok(Objeto::Roca));
+        assert_eq!(convertir_simbolos("W"), Ok(Objeto::Pared));
 
-            // Prueba para convertir un símbolo en una Bomba y Bomba de Traspaso.
-            assert_eq!(convertir_simbolos("B2"), Ok(Objeto::Bomba(false, 2)));
-            assert_eq!(convertir_simbolos("S1"), Ok(Objeto::Bomba(true, 1)));
+        // Prueba para convertir un símbolo en una Bomba y Bomba de Traspaso.
+        assert_eq!(convertir_simbolos("B2"), Ok(Objeto::Bomba(false, 2)));
+        assert_eq!(convertir_simbolos("S1"), Ok(Objeto::Bomba(true, 1)));
 
-            // Prueba para convertir un símbolo en un Desvío.
-            assert_eq!(
-                convertir_simbolos("DU"),
-                Ok(Objeto::Desvio(Direccion::Arriba))
-            );
-            assert_eq!(
-                convertir_simbolos("DL"),
-                Ok(Objeto::Desvio(Direccion::Izquierda))
-            );
+        // Prueba para convertir un símbolo en un Desvío.
+        assert_eq!(
+            convertir_simbolos("DU"),
+            Ok(Objeto::Desvio(Direccion::Arriba))
+        );
+        assert_eq!(
+            convertir_simbolos("DL"),
+            Ok(Objeto::Desvio(Direccion::Izquierda))
+        );
 
-            // Prueba para un símbolo no válido.
-            assert_eq!(
-                convertir_simbolos("X"),
-                Err("Símbolo no válido en el laberinto")
-            );
+        // Prueba para un símbolo no válido.
+        assert_eq!(
+            convertir_simbolos("X"),
+            Err("Símbolo no válido en el laberinto")
+        );
 
-            // Prueba para valores inválidos de enemigo.
-            assert_eq!(
-                convertir_simbolos("F0"),
-                Err("Valor de vida de enemigo no válido")
-            );
-            assert_eq!(
-                convertir_simbolos("F5"),
-                Err("Valor de vida de enemigo no válido")
-            );
+        // Prueba para valores inválidos de enemigo.
+        assert_eq!(
+            convertir_simbolos("F0"),
+            Err("Valor de vida de enemigo no válido")
+        );
+        assert_eq!(
+            convertir_simbolos("F5"),
+            Err("Valor de vida de enemigo no válido")
+        );
 
-            // Prueba para valores inválidos de alcance de bomba.
-            assert_eq!(
-                convertir_simbolos("B0"),
-                Err("Valor de alcance de bomba no válido")
-            );
+        // Prueba para valores inválidos de alcance de bomba.
+        assert_eq!(
+            convertir_simbolos("B0"),
+            Err("Valor de alcance de bomba no válido")
+        );
 
-            // Prueba para valores inválidos de alcance de bomba de traspaso.
-            assert_eq!(
-                convertir_simbolos("S0"),
-                Err("Valor de alcance de bomba de traspaso no válido")
-            );
-        }
+        // Prueba para valores inválidos de alcance de bomba de traspaso.
+        assert_eq!(
+            convertir_simbolos("S0"),
+            Err("Valor de alcance de bomba de traspaso no válido")
+        );
     }
+}
